@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.ahmedfahmi.gravity.Extra.RoundedImageView;
 import com.ahmedfahmi.gravity.managers.FirebaseManager;
+import com.ahmedfahmi.gravity.managers.ImagesManager;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -41,6 +42,7 @@ public class UserProfileActivity extends AppCompatActivity {
     private Firebase photosUrl;
     private Intent intentOfMedia;
     private ListView photoList;
+    private ImagesManager imagesManager;
 
 
     @Override
@@ -55,6 +57,8 @@ public class UserProfileActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
 
                 if (dataSnapshot.exists()) {
+
+
 
                     String picture = dataSnapshot.getValue().toString();
                     byte[] imageAsBytes = Base64.decode(picture.getBytes(), Base64.DEFAULT);
@@ -110,6 +114,8 @@ public class UserProfileActivity extends AppCompatActivity {
         tvUserName = (TextView) findViewById(R.id.profileUserName);
         intentOfMedia = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         photoList = (ListView) findViewById(R.id.photoList);
+        imagesManager = ImagesManager.getInstance();
+
 
 
     }
@@ -181,10 +187,9 @@ public class UserProfileActivity extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-            byte[] bytes = stream.toByteArray();
-            String base64Image = Base64.encodeToString(bytes, Base64.DEFAULT);
+
+
+            String base64Image = imagesManager.convertBitmapToString(bitmap);
             if (requestCode == 1) {
                 picUrl.setValue(base64Image);
             } else if (requestCode == 2) {
@@ -197,6 +202,8 @@ public class UserProfileActivity extends AppCompatActivity {
         }
 
     }
+
+  
 }
 
 
