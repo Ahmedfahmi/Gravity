@@ -2,12 +2,10 @@ package com.ahmedfahmi.gravity;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,7 +16,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ahmedfahmi.gravity.Extra.RoundedImageView;
 import com.ahmedfahmi.gravity.managers.FirebaseManager;
 import com.ahmedfahmi.gravity.managers.ImagesManager;
 import com.firebase.client.DataSnapshot;
@@ -27,7 +24,6 @@ import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 import com.firebase.ui.FirebaseListAdapter;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class UserProfileActivity extends AppCompatActivity {
@@ -41,8 +37,36 @@ public class UserProfileActivity extends AppCompatActivity {
     private String firstName;
     private Firebase photosUrl;
     private Intent intentOfMedia;
-    private ListView photoList;
+    private ListView photosList;
     private ImagesManager imagesManager;
+    private Firebase userDataFirstName;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.user_profile_activity);
+        Firebase.setAndroidContext(this);
+        intiate();
+        prepareFirebase();
+
+
+        FirebaseListAdapter<String> firebaseListAdapter = new FirebaseListAdapter<String>(this, String.class, android.R.layout.simple_list_item_1, photosUrl) {
+            @Override
+            protected void populateView(View view, String base64Image, int i) {
+
+                //byte[] imageAsBytes = Base64.decode(base64Image.getBytes(), Base64.DEFAULT);
+                // Bitmap bitmap = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
+                //((ImageView) view.findViewById(R.id.imageView1)).setImageBitmap(bitmap);
+                ((TextView) view.findViewById(android.R.id.text1)).setText(base64Image);
+                Log.i("Image", "datat cahe");
+
+            }
+        };
+        photosList.setAdapter(firebaseListAdapter);
+
+
+    }
 
 
     @Override
@@ -59,11 +83,9 @@ public class UserProfileActivity extends AppCompatActivity {
                 if (dataSnapshot.exists()) {
 
 
+                    Bitmap bitmap = imagesManager.toBitmap(dataSnapshot);
+                    profilePic.setImageBitmap(bitmap);
 
-                    String picture = dataSnapshot.getValue().toString();
-                    byte[] imageAsBytes = Base64.decode(picture.getBytes(), Base64.DEFAULT);
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
-                    profilePic.setImageBitmap(RoundedImageView.getCroppedBitmap(bitmap, 100));
                     Log.i("C_", "nice");
                 }
 
@@ -72,15 +94,11 @@ public class UserProfileActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(FirebaseError firebaseError) {
-                String msg = firebaseError.toString().substring(firebaseError.toString().indexOf(" "));
-                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+
+                Toast.makeText(getApplicationContext(), firebaseManager.errorMessage(firebaseError), Toast.LENGTH_LONG).show();
 
             }
         });
-
-        //https://fahmiphotos.firebaseio.com/User/AhmedFahmi/firstName
-        //Firebase usersData = new Firebase("https://fahmiphotos.firebaseio.com/User/AhmedFahmi/firstName");
-        Firebase userDataFirstName = firebaseManager.generateFirebase("User/" + userOnlineUrl + "/firstName");
 
 
         userDataFirstName.addValueEventListener(new ValueEventListener() {
@@ -97,6 +115,9 @@ public class UserProfileActivity extends AppCompatActivity {
             @Override
             public void onCancelled(FirebaseError firebaseError) {
 
+
+                Toast.makeText(getApplicationContext(), firebaseManager.errorMessage(firebaseError), Toast.LENGTH_LONG).show();
+
             }
         });
 
@@ -104,43 +125,25 @@ public class UserProfileActivity extends AppCompatActivity {
     }
 
     private void intiate() {
-        extractLoginData = getIntent().getExtras();
-        email = extractLoginData.getString("email");
-        userOnlineUrl = email.substring(0, email.indexOf("@"));
-        firebaseManager = FirebaseManager.instance();
-        picUrl = firebaseManager.generateFirebase("profilePics/" + userOnlineUrl);
-        photosUrl = firebaseManager.generateFirebase("photos/" + userOnlineUrl);
+        photosList = (ListView) findViewById(R.id.photoList);
         profilePic = (ImageView) findViewById(R.id.profilePic);
         tvUserName = (TextView) findViewById(R.id.profileUserName);
+        extractLoginData = getIntent().getExtras();
+
         intentOfMedia = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        photoList = (ListView) findViewById(R.id.photoList);
         imagesManager = ImagesManager.getInstance();
 
+        email = extractLoginData.getString("email");
+        userOnlineUrl = email.substring(0, email.indexOf("@"));
 
 
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.user_profile_activity);
-        Firebase.setAndroidContext(this);
-        intiate();
-        FirebaseListAdapter<String> firebaseListAdapter = new FirebaseListAdapter<String>(this, String.class, android.R.layout.simple_list_item_1, photosUrl) {
-            @Override
-            protected void populateView(View view, String base64Image, int i) {
-
-                //byte[] imageAsBytes = Base64.decode(base64Image.getBytes(), Base64.DEFAULT);
-                // Bitmap bitmap = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
-                //((ImageView) view.findViewById(R.id.imageView1)).setImageBitmap(bitmap);
-                ((TextView) view.findViewById(android.R.id.text1)).setText(base64Image);
-                Log.i("Image", "datat cahe");
-
-            }
-        };
-        photoList.setAdapter(firebaseListAdapter);
-
-
+    private void prepareFirebase() {
+        firebaseManager = FirebaseManager.instance();
+        picUrl = firebaseManager.generateFirebase("profilePics/" + userOnlineUrl);
+        photosUrl = firebaseManager.generateFirebase("photos/" + userOnlineUrl);
+        userDataFirstName = firebaseManager.generateFirebase("User/" + userOnlineUrl + "/firstName");
     }
 
 
@@ -178,23 +181,20 @@ public class UserProfileActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && data != null) {
-            Uri selectedImage = data.getData();
+            Uri selectedImageUri = data.getData();
 
-
-            Bitmap bitmap = null;
+            Bitmap selectedBitmap = null;
             try {
-                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
+                selectedBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImageUri);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-
-            String base64Image = imagesManager.convertBitmapToString(bitmap);
-            if (requestCode == 1) {
-                picUrl.setValue(base64Image);
-            } else if (requestCode == 2) {
-                photosUrl.setValue(base64Image);
+            String base64Image = imagesManager.convertBitmapToString(selectedBitmap);
+            switch (requestCode){
+                case 1: picUrl.setValue(base64Image); break;
+                case 2: photosUrl.setValue(base64Image); break;
             }
+
 
 
             Log.i("E_", email);
@@ -203,7 +203,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
     }
 
-  
+
 }
 
 
