@@ -48,7 +48,7 @@ public class SignupManager {
 
             @Override
             public void onError(FirebaseError firebaseError) {
-                Log.i("TAG", firebaseError.toString());
+                Log.i("TAG", firebaseManager.errorMessage(firebaseError));
 
             }
         });

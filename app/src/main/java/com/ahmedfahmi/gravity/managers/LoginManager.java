@@ -63,7 +63,7 @@ public class LoginManager extends AppCompatActivity{
 
             @Override
             public void onAuthenticationError(FirebaseError firebaseError) {
-                Log.i("TAG",firebaseError.toString());
+                Log.i("TAG",firebaseManager.errorMessage(firebaseError));
 
             }
         });

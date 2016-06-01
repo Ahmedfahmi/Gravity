@@ -1,6 +1,7 @@
 package com.ahmedfahmi.gravity.managers;
 
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
 import com.firebase.ui.FirebaseListAdapter;
 
 /**
@@ -38,6 +39,12 @@ public class FirebaseManager {
     }
     public Firebase generateFirebase(String name) {
         return new Firebase(FIREBASE_URL + name);
+    }
+
+    public String errorMessage(FirebaseError msg){
+        String message = msg.toString().substring(msg.toString().indexOf(" "));
+
+        return message;
     }
 
 

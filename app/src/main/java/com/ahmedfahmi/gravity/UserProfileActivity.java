@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.ahmedfahmi.gravity.managers.FirebaseManager;
 import com.ahmedfahmi.gravity.managers.ImagesManager;
+import com.ahmedfahmi.gravity.managers.UserProfileManager;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -27,19 +28,27 @@ import com.firebase.ui.FirebaseListAdapter;
 import java.io.IOException;
 
 public class UserProfileActivity extends AppCompatActivity {
-    private FirebaseManager firebaseManager;
-    private Firebase picUrl;
+
+
     private String email;
-    private ImageView profilePic;
-    private String userOnlineUrl;
-    private Bundle extractLoginData;
-    private TextView tvUserName;
     private String firstName;
-    private Firebase photosUrl;
-    private Intent intentOfMedia;
+    private String userOnlineUrl;
+
+    private ImageView profilePic;
     private ListView photosList;
+    private TextView tvUserName;
+
+    private Bundle extractLoginData;
+
+    private Intent intentOfMedia;
+
     private ImagesManager imagesManager;
+    private UserProfileManager userProfileManager;
+    private FirebaseManager firebaseManager;
+
     private Firebase userDataFirstName;
+    private Firebase picUrl;
+    private Firebase photosUrl;
 
 
     @Override
@@ -59,7 +68,7 @@ public class UserProfileActivity extends AppCompatActivity {
                 // Bitmap bitmap = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
                 //((ImageView) view.findViewById(R.id.imageView1)).setImageBitmap(bitmap);
                 ((TextView) view.findViewById(android.R.id.text1)).setText(base64Image);
-                Log.i("Image", "datat cahe");
+
 
             }
         };
@@ -74,6 +83,15 @@ public class UserProfileActivity extends AppCompatActivity {
         super.onStart();
 
         Log.i("hob", userOnlineUrl);
+
+       /* if (userProfileManager.getProfilePic()!=null){
+            profilePic.setImageBitmap(userProfileManager.getProfilePic());
+            Log.i("pic","exsist");
+        }else{
+            Log.i("pic","null");
+        }*/
+
+
 
 
         picUrl.addValueEventListener(new ValueEventListener() {
@@ -132,9 +150,14 @@ public class UserProfileActivity extends AppCompatActivity {
 
         intentOfMedia = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         imagesManager = ImagesManager.getInstance();
+        userProfileManager = UserProfileManager.getInstance();
+
 
         email = extractLoginData.getString("email");
+
         userOnlineUrl = email.substring(0, email.indexOf("@"));
+
+        userProfileManager.setUserOnlineUrl(email);
 
 
     }
@@ -190,18 +213,20 @@ public class UserProfileActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             String base64Image = imagesManager.convertBitmapToString(selectedBitmap);
-            switch (requestCode){
-                case 1: picUrl.setValue(base64Image); break;
-                case 2: photosUrl.setValue(base64Image); break;
+            switch (requestCode) {
+                case 1:
+                    picUrl.setValue(base64Image);
+                    break;
+                case 2:
+                    photosUrl.setValue(base64Image);
+                    break;
             }
 
-
-
-            Log.i("E_", email);
 
         }
 
     }
+
 
 
 }

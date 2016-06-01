@@ -14,12 +14,14 @@ import android.widget.TextView;
 
 import com.ahmedfahmi.gravity.Extra.RoundedImageView;
 import com.ahmedfahmi.gravity.managers.FirebaseManager;
+import com.ahmedfahmi.gravity.managers.ImagesManager;
 import com.firebase.client.Firebase;
 import com.firebase.ui.FirebaseListAdapter;
 
 public class UsersListActivity extends AppCompatActivity {
     private FirebaseManager firebaseManager;
     private ListView usersList;
+    private ImagesManager imagesManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,18 +32,23 @@ public class UsersListActivity extends AppCompatActivity {
 
         firebaseManager = FirebaseManager.instance();
         usersList = (ListView) findViewById(R.id.usersListView);
+        imagesManager = ImagesManager.getInstance();
         Firebase usersUrl = firebaseManager.generateFirebase("profilePics");
 
 
         FirebaseListAdapter firebaseListAdapter = new FirebaseListAdapter<String>(this, String.class, R.layout.users_list, usersUrl) {
             @Override
             protected void populateView(View view, String base64Image, int i) {
-                ((TextView) view.findViewById(R.id.textView1)).setText(String.valueOf(i));
-                byte[] imageAsBytes = Base64.decode(base64Image.getBytes(), Base64.DEFAULT);
-                Bitmap bitmap = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
+                Bitmap bitmap =imagesManager.toBitmap(base64Image);
+
+                ((TextView) view.findViewById(R.id.textView1)).setText(getRef(i).getKey());
 
 
-                ((ImageView) view.findViewById(R.id.imageView1)).setImageBitmap(RoundedImageView.getCroppedBitmap(bitmap, 100));
+                //byte[] imageAsBytes = Base64.decode(base64Image.getBytes(), Base64.DEFAULT);
+               // Bitmap bitmap = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
+
+
+                ((ImageView) view.findViewById(R.id.imageView1)).setImageBitmap(bitmap);
 
 
             }
