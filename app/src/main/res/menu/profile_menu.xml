@@ -3,14 +3,18 @@
 
     <item android:id="@+id/changeProfilePic"
         android:showAsAction="always"
-        android:title="Edit profile picture" />
+        android:title="@string/EditProfilePic" />
 
     <item android:id="@+id/explore"
-        android:title="Explore"
+        android:title="@string/explore"
         android:showAsAction="always"/>
 
     <item android:id="@+id/addPhotos"
-        android:title="Add Photos"
+        android:title="@string/addPhotos"
+        android:showAsAction="always"/>
+
+    <item android:id="@+id/logout"
+        android:title="@string/logout"
         android:showAsAction="always"/>
 
 

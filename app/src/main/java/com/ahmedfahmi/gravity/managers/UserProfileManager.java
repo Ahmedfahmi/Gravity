@@ -37,6 +37,14 @@ public class UserProfileManager {
         this.userOnlineUrl = email.substring(0, email.indexOf("@"));
     }
 
+    public void setUserOnlineUrl2(String email) {
+
+        this.userOnlineUrl = email;
+    }
+
+
+
+
 
     public static UserProfileManager getInstance() {
         if (userProfileManager == null) {

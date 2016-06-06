@@ -16,13 +16,18 @@ public class LoginActivity extends AppCompatActivity {
 
     private EditText etEmail;
     private EditText etPassword;
+
     private TextView tvSignup;
     private ImageView gravityImage;
-    private SignupManager signupManager;
-    private LoginManager loginManager;
+
     private Intent intentOfSignupActivity;
     private Intent intentOfUserList;
     private Intent intentOfUserProfile;
+
+    private SignupManager signupManager;
+    private LoginManager loginManager;
+
+    public static final String EMAIL_EXTRA = "email";
 
 
     @Override
@@ -39,11 +44,11 @@ public class LoginActivity extends AppCompatActivity {
     public void login(View view) {
         String email = etEmail.getText().toString().toLowerCase();
         String passWord = etPassword.getText().toString();
-        intentOfUserProfile.putExtra("email", email);
+        intentOfUserProfile.putExtra(EMAIL_EXTRA, email);
         loginManager.login(email, passWord);
 
         //fix delay here!!
-       if (loginManager.isLogged()) {
+        if (loginManager.isLogged()) {
             startActivity(intentOfUserProfile);
         }
     }

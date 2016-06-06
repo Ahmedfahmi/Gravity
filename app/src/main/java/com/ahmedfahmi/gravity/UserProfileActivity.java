@@ -30,7 +30,8 @@ import java.io.IOException;
 public class UserProfileActivity extends AppCompatActivity {
 
 
-    private String email;
+    private String email_Login;
+    private String email_UsersList;
     private String firstName;
     private String userOnlineUrl;
 
@@ -38,9 +39,12 @@ public class UserProfileActivity extends AppCompatActivity {
     private ListView photosList;
     private TextView tvUserName;
 
-    private Bundle extractLoginData;
+    private Bundle extractLoginActivityExtras;
+    private Bundle extractUserListActivity;
 
     private Intent intentOfMedia;
+    private Intent intentOfLoginActivity;
+    private Intent intentOfUsersList;
 
     private ImagesManager imagesManager;
     private UserProfileManager userProfileManager;
@@ -50,29 +54,29 @@ public class UserProfileActivity extends AppCompatActivity {
     private Firebase picUrl;
     private Firebase photosUrl;
 
+    private boolean menuDisabled = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_profile_activity);
         Firebase.setAndroidContext(this);
-        intiate();
-        prepareFirebase();
 
 
-        FirebaseListAdapter<String> firebaseListAdapter = new FirebaseListAdapter<String>(this, String.class, android.R.layout.simple_list_item_1, photosUrl) {
-            @Override
-            protected void populateView(View view, String base64Image, int i) {
-
-                //byte[] imageAsBytes = Base64.decode(base64Image.getBytes(), Base64.DEFAULT);
-                // Bitmap bitmap = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
-                //((ImageView) view.findViewById(R.id.imageView1)).setImageBitmap(bitmap);
-                ((TextView) view.findViewById(android.R.id.text1)).setText(base64Image);
-
-
-            }
-        };
-        photosList.setAdapter(firebaseListAdapter);
+//        FirebaseListAdapter<String> firebaseListAdapter = new FirebaseListAdapter<String>(this, String.class, android.R.layout.simple_list_item_1, photosUrl) {
+//            @Override
+//            protected void populateView(View view, String base64Image, int i) {
+//
+//                //byte[] imageAsBytes = Base64.decode(base64Image.getBytes(), Base64.DEFAULT);
+//                // Bitmap bitmap = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
+//                //((ImageView) view.findViewById(R.id.imageView1)).setImageBitmap(bitmap);
+//                ((TextView) view.findViewById(android.R.id.text1)).setText(base64Image);
+//
+//
+//            }
+//        };
+//        photosList.setAdapter(firebaseListAdapter);
 
 
     }
@@ -81,8 +85,12 @@ public class UserProfileActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        intiate();
+        prepareFirebase();
+        menuDisabled = extractUserListActivity.getBoolean(UsersListActivity.MENU_DISABLED);
 
-        Log.i("hob", userOnlineUrl);
+
+        //Log.i("hob", userOnlineUrl);
 
        /* if (userProfileManager.getProfilePic()!=null){
             profilePic.setImageBitmap(userProfileManager.getProfilePic());
@@ -90,8 +98,6 @@ public class UserProfileActivity extends AppCompatActivity {
         }else{
             Log.i("pic","null");
         }*/
-
-
 
 
         picUrl.addValueEventListener(new ValueEventListener() {
@@ -146,18 +152,29 @@ public class UserProfileActivity extends AppCompatActivity {
         photosList = (ListView) findViewById(R.id.photoList);
         profilePic = (ImageView) findViewById(R.id.profilePic);
         tvUserName = (TextView) findViewById(R.id.profileUserName);
-        extractLoginData = getIntent().getExtras();
+        extractLoginActivityExtras = getIntent().getExtras();
+        extractUserListActivity = getIntent().getExtras();
+
 
         intentOfMedia = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intentOfLoginActivity = new Intent(this, LoginActivity.class);
+        intentOfUsersList = new Intent(getApplicationContext(), UsersListActivity.class);
+
+
         imagesManager = ImagesManager.getInstance();
         userProfileManager = UserProfileManager.getInstance();
 
 
-        email = extractLoginData.getString("email");
+        email_Login = extractLoginActivityExtras.getString(LoginActivity.EMAIL_EXTRA);
+        email_UsersList = extractUserListActivity.getString(LoginActivity.EMAIL_EXTRA);
+        if (email_Login.contains("@")) {
+            userOnlineUrl = email_Login.substring(0, email_Login.indexOf("@"));
+            userProfileManager.setUserOnlineUrl(email_Login);
+        } else {
 
-        userOnlineUrl = email.substring(0, email.indexOf("@"));
-
-        userProfileManager.setUserOnlineUrl(email);
+            userOnlineUrl = email_UsersList;
+            userProfileManager.setUserOnlineUrl2(userOnlineUrl);
+        }
 
 
     }
@@ -167,13 +184,22 @@ public class UserProfileActivity extends AppCompatActivity {
         picUrl = firebaseManager.generateFirebase("profilePics/" + userOnlineUrl);
         photosUrl = firebaseManager.generateFirebase("photos/" + userOnlineUrl);
         userDataFirstName = firebaseManager.generateFirebase("User/" + userOnlineUrl + "/firstName");
+
+        picUrl = firebaseManager.generateFirebase("profilePics/" + userOnlineUrl);
+        photosUrl = firebaseManager.generateFirebase("photos/" + userOnlineUrl);
+        userDataFirstName = firebaseManager.generateFirebase("User/" + userOnlineUrl + "/firstName");
+
     }
 
 
     public boolean onCreateOptionsMenu(Menu menu) {
 
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.profile_menu, menu);
+        if (!menuDisabled) {
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate(R.menu.profile_menu, menu);
+        }
+
+
         return true;
     }
 
@@ -185,13 +211,17 @@ public class UserProfileActivity extends AppCompatActivity {
                 break;
 
             case R.id.explore:
-                Intent intentOfUsersList = new Intent(getApplicationContext(), UsersListActivity.class);
+                intentOfUsersList.putExtra(LoginActivity.EMAIL_EXTRA, userOnlineUrl);
+
                 startActivity(intentOfUsersList);
                 break;
 
             case R.id.addPhotos:
                 startActivityForResult(intentOfMedia, 2);
                 break;
+
+            case R.id.logout:
+                startActivity(intentOfLoginActivity);
 
 
         }
@@ -226,7 +256,6 @@ public class UserProfileActivity extends AppCompatActivity {
         }
 
     }
-
 
 
 }

@@ -23,6 +23,7 @@ public class SignupActivity extends AppCompatActivity {
     private EditText etEmail;
     private EditText etPassword;
     private EditText etPasswordConfirmation;
+    private ActionBar actionBar;
 
 
     @Override
@@ -44,7 +45,7 @@ public class SignupActivity extends AppCompatActivity {
         etPassword = (EditText) findViewById(R.id.signupPassword);
         etPasswordConfirmation = (EditText) findViewById(R.id.signupPasswordConfirm);
         etMobile = (EditText) findViewById(R.id.signupMobile);
-        ActionBar actionBar;
+
         actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
 
