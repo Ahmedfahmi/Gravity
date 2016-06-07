@@ -12,6 +12,7 @@
     <string name="e_mail">E-mail:</string>
     <string name="example_com">\@example.com</string>
     <string name="sign_up">sign up</string>
+    <string name="guessWho">Guess Who</string>
     <string name="explore">Explore</string>
     <string name="logout">Logout</string>
     <string name="signup">Signup</string>

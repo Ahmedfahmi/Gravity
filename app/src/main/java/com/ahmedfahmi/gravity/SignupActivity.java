@@ -1,11 +1,10 @@
 package com.ahmedfahmi.gravity;
 
 
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import android.util.Log;
+
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -23,7 +22,6 @@ public class SignupActivity extends AppCompatActivity {
     private EditText etEmail;
     private EditText etPassword;
     private EditText etPasswordConfirmation;
-    private ActionBar actionBar;
 
 
     @Override
@@ -31,13 +29,12 @@ public class SignupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
         Firebase.setAndroidContext(this);
-
-        intiate();
+        initiate();
 
 
     }
 
-    private void intiate() {
+    private void initiate() {
         signupManager = SignupManager.instance();
         etFirstName = (EditText) findViewById(R.id.signupFirstName);
         etLastName = (EditText) findViewById(R.id.signupLastName);
@@ -46,25 +43,44 @@ public class SignupActivity extends AppCompatActivity {
         etPasswordConfirmation = (EditText) findViewById(R.id.signupPasswordConfirm);
         etMobile = (EditText) findViewById(R.id.signupMobile);
 
-        actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-
 
     }
 
-    public void signup(View view) {
+    public void signUp(View view) {
         String firstName = etFirstName.getText().toString().toLowerCase();
         String lastName = etLastName.getText().toString().toLowerCase();
         String mobile = etMobile.getText().toString().toLowerCase();
         String email = etEmail.getText().toString().toLowerCase();
         String password = etPassword.getText().toString();
         String passwordConfirm = etPasswordConfirmation.getText().toString();
-        Log.i("pass", email + password + passwordConfirm);
-        if (password.equals(passwordConfirm) && firstName != null && lastName != null && mobile != null && password != null && email != null) {
-            signupManager.signup(email, password, firstName, lastName, mobile);
+        if (
+
+                firstName != null
+                        && lastName != null
+                        && mobile != null
+                        && password != null
+                        && email != null
+                        && password.length() >= 6
+                        && password.equals(passwordConfirm)
+                        && mobile.length() >= 11
+
+
+                ) {
+            signupManager.signUp(this, email, password, firstName, lastName, mobile);
 
         } else {
-            Toast.makeText(getApplicationContext(), "check the correctness of all fields", Toast.LENGTH_LONG).show();
+
+            if (password.length() < 6) {
+                Toast.makeText(getApplicationContext(), "password must be more than 6 characters", Toast.LENGTH_LONG).show();
+            } else if (!password.equals(passwordConfirm)) {
+                Toast.makeText(getApplicationContext(), "password fields doesn't match", Toast.LENGTH_LONG).show();
+            } else if (mobile.length() < 11) {
+                Toast.makeText(getApplicationContext(), "mobile number is too short", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "check the correctness of all fields", Toast.LENGTH_LONG).show();
+            }
+
+
         }
 
 

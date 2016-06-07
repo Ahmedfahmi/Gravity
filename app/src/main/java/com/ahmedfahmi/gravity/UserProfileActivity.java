@@ -11,11 +11,14 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ahmedfahmi.gravity.Extra.Constants;
+import com.ahmedfahmi.gravity.Extra.RoundedImageView;
 import com.ahmedfahmi.gravity.managers.FirebaseManager;
 import com.ahmedfahmi.gravity.managers.ImagesManager;
 import com.ahmedfahmi.gravity.managers.UserProfileManager;
@@ -38,6 +41,8 @@ public class UserProfileActivity extends AppCompatActivity {
     private ImageView profilePic;
     private ListView photosList;
     private TextView tvUserName;
+    private ImageButton callBtn;
+
 
     private Bundle extractLoginActivityExtras;
     private Bundle extractUserListActivity;
@@ -53,6 +58,9 @@ public class UserProfileActivity extends AppCompatActivity {
     private Firebase userDataFirstName;
     private Firebase picUrl;
     private Firebase photosUrl;
+    private Firebase userMobileUrl;
+
+    private String number;
 
     private boolean menuDisabled = false;
 
@@ -62,21 +70,6 @@ public class UserProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_profile_activity);
         Firebase.setAndroidContext(this);
-
-
-//        FirebaseListAdapter<String> firebaseListAdapter = new FirebaseListAdapter<String>(this, String.class, android.R.layout.simple_list_item_1, photosUrl) {
-//            @Override
-//            protected void populateView(View view, String base64Image, int i) {
-//
-//                //byte[] imageAsBytes = Base64.decode(base64Image.getBytes(), Base64.DEFAULT);
-//                // Bitmap bitmap = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
-//                //((ImageView) view.findViewById(R.id.imageView1)).setImageBitmap(bitmap);
-//                ((TextView) view.findViewById(android.R.id.text1)).setText(base64Image);
-//
-//
-//            }
-//        };
-//        photosList.setAdapter(firebaseListAdapter);
 
 
     }
@@ -90,16 +83,6 @@ public class UserProfileActivity extends AppCompatActivity {
         menuDisabled = extractUserListActivity.getBoolean(UsersListActivity.MENU_DISABLED);
 
 
-        //Log.i("hob", userOnlineUrl);
-
-       /* if (userProfileManager.getProfilePic()!=null){
-            profilePic.setImageBitmap(userProfileManager.getProfilePic());
-            Log.i("pic","exsist");
-        }else{
-            Log.i("pic","null");
-        }*/
-
-
         picUrl.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -108,7 +91,8 @@ public class UserProfileActivity extends AppCompatActivity {
 
 
                     Bitmap bitmap = imagesManager.toBitmap(dataSnapshot);
-                    profilePic.setImageBitmap(bitmap);
+                    Bitmap roundedBitmap = RoundedImageView.getCroppedBitmap(bitmap, 100);
+                    profilePic.setImageBitmap(roundedBitmap);
 
                     Log.i("C_", "nice");
                 }
@@ -144,6 +128,50 @@ public class UserProfileActivity extends AppCompatActivity {
 
             }
         });
+//        FirebaseListAdapter<String> images = new FirebaseListAdapter<String>(this,String.class, R.layout.image_list,photosUrl) {
+//            @Override
+//            protected void populateView(View view, String s, int i) {
+//
+//                Log.e("E_E",s);
+//
+//                ((ImageView)findViewById(R.id.imageListPhoto)).setImageBitmap(imagesManager.toBitmap(s));
+//
+//
+//            }
+//        };photosList.setAdapter(images);
+
+
+        userMobileUrl.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                number = dataSnapshot.getValue().toString();
+                if (number != null) {
+                    callBtn.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+
+
+        FirebaseListAdapter<String> listAdapter = new FirebaseListAdapter<String>(this, String.class, R.layout.image_list, photosUrl) {
+            @Override
+            protected void populateView(View view, String s, int i) {
+
+                ImagesManager imagesManager = ImagesManager.getInstance();
+
+                Bitmap bitmap = imagesManager.toBitmap(s);
+
+
+                ((ImageView) view.findViewById(R.id.pics)).setImageBitmap(bitmap);
+
+
+            }
+        };
+        photosList.setAdapter(listAdapter);
 
 
     }
@@ -152,6 +180,8 @@ public class UserProfileActivity extends AppCompatActivity {
         photosList = (ListView) findViewById(R.id.photoList);
         profilePic = (ImageView) findViewById(R.id.profilePic);
         tvUserName = (TextView) findViewById(R.id.profileUserName);
+        callBtn = (ImageButton) findViewById(R.id.callBtn);
+        callBtn.setVisibility(View.INVISIBLE);
         extractLoginActivityExtras = getIntent().getExtras();
         extractUserListActivity = getIntent().getExtras();
 
@@ -165,8 +195,8 @@ public class UserProfileActivity extends AppCompatActivity {
         userProfileManager = UserProfileManager.getInstance();
 
 
-        email_Login = extractLoginActivityExtras.getString(LoginActivity.EMAIL_EXTRA);
-        email_UsersList = extractUserListActivity.getString(LoginActivity.EMAIL_EXTRA);
+        email_Login = extractLoginActivityExtras.getString(Constants.ACTIVE_EMAIL_EXTRA);
+        email_UsersList = extractUserListActivity.getString(Constants.ACTIVE_EMAIL_EXTRA);
         if (email_Login.contains("@")) {
             userOnlineUrl = email_Login.substring(0, email_Login.indexOf("@"));
             userProfileManager.setUserOnlineUrl(email_Login);
@@ -184,10 +214,9 @@ public class UserProfileActivity extends AppCompatActivity {
         picUrl = firebaseManager.generateFirebase("profilePics/" + userOnlineUrl);
         photosUrl = firebaseManager.generateFirebase("photos/" + userOnlineUrl);
         userDataFirstName = firebaseManager.generateFirebase("User/" + userOnlineUrl + "/firstName");
+        userMobileUrl = firebaseManager.generateFirebase("User/" + userOnlineUrl + "/mobile");
+        //Firebase firebase = new Firebase("https://fahmiphotos.firebaseio.com/photos/amr");
 
-        picUrl = firebaseManager.generateFirebase("profilePics/" + userOnlineUrl);
-        photosUrl = firebaseManager.generateFirebase("photos/" + userOnlineUrl);
-        userDataFirstName = firebaseManager.generateFirebase("User/" + userOnlineUrl + "/firstName");
 
     }
 
@@ -211,7 +240,7 @@ public class UserProfileActivity extends AppCompatActivity {
                 break;
 
             case R.id.explore:
-                intentOfUsersList.putExtra(LoginActivity.EMAIL_EXTRA, userOnlineUrl);
+                intentOfUsersList.putExtra(Constants.ACTIVE_EMAIL_EXTRA, userOnlineUrl);
 
                 startActivity(intentOfUsersList);
                 break;
@@ -248,13 +277,29 @@ public class UserProfileActivity extends AppCompatActivity {
                     picUrl.setValue(base64Image);
                     break;
                 case 2:
-                    photosUrl.setValue(base64Image);
+                    photosUrl.push().setValue(base64Image);
                     break;
             }
 
 
         }
 
+    }
+
+    public void call(View view) {
+
+
+        dialPhoneNumber(number);
+
+
+    }
+
+    public void dialPhoneNumber(String phoneNumber) {
+        Intent intent = new Intent(Intent.ACTION_DIAL);
+        intent.setData(Uri.parse("tel:" + phoneNumber));
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 
 

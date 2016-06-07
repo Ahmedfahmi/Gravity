@@ -34,19 +34,21 @@ public class ImagesManager {
         byte[] bytes = stream.toByteArray();
         return Base64.encodeToString(bytes, Base64.DEFAULT);
     }
+
     public Bitmap toBitmap(DataSnapshot dataSnapshot) {
         String picture = dataSnapshot.getValue().toString();
         byte[] imageAsBytes = Base64.decode(picture.getBytes(), Base64.DEFAULT);
         Bitmap bitmap = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
-        Bitmap roundedBitmap = RoundedImageView.getCroppedBitmap(bitmap, 100);
-        return roundedBitmap;
+
+        return bitmap;
     }
+
     public Bitmap toBitmap(String string) {
 
         byte[] imageAsBytes = Base64.decode(string.getBytes(), Base64.DEFAULT);
         Bitmap bitmap = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
-        Bitmap roundedBitmap = RoundedImageView.getCroppedBitmap(bitmap, 100);
-        return roundedBitmap;
+
+        return bitmap;
     }
 
 }

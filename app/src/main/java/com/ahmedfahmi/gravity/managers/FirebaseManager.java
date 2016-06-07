@@ -34,8 +34,9 @@ public class FirebaseManager {
     public Firebase getFirebase() {
         return firebase;
     }
-    public Firebase createChild(String childName) {
-        return this.firebase.child(childName);
+    public Firebase createChild(Firebase firebase,String childName) {
+
+        return firebase.child(childName);
     }
     public Firebase generateFirebase(String name) {
         return new Firebase(FIREBASE_URL + name);

@@ -1,9 +1,10 @@
 package com.ahmedfahmi.gravity.managers;
 
-import android.util.Log;
+import android.content.Context;
 import android.widget.Toast;
 
-import com.ahmedfahmi.gravity.LoginActivity;
+
+import com.ahmedfahmi.gravity.Extra.Constants;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 
@@ -12,18 +13,17 @@ import com.firebase.client.FirebaseError;
  */
 public class SignupManager {
 
-    private String email;
-    private String password;
     private static SignupManager signupManager;
     private FirebaseManager firebaseManager;
-    private Firebase firebaseMain;
+    private Firebase firebaseInstant;
     private Firebase firebaseUserUrl;
+
 
 
     private SignupManager() {
         firebaseManager = FirebaseManager.instance();
-        firebaseMain = firebaseManager.getFirebase();
-        firebaseUserUrl = firebaseManager.generateFirebase("User");
+        firebaseInstant = firebaseManager.getFirebase();
+        firebaseUserUrl = firebaseManager.generateFirebase(Constants.USER_URL);
 
     }
 
@@ -35,20 +35,19 @@ public class SignupManager {
     }
 
 
-    public void signup(final String email, final String password, final String firstName, final String lastName, final String mobile) {
-        firebaseMain.createUser(email, password, new Firebase.ResultHandler() {
+    public void signUp(final Context context, final String email, final String password, final String firstName, final String lastName, final String mobile) {
+        firebaseInstant.createUser(email, password, new Firebase.ResultHandler() {
             @Override
             public void onSuccess() {
-                Log.i("TAG", "ok");
                 User user = new User(email, password, mobile, lastName, firstName);
                 firebaseUserUrl.child(email.substring(0, email.indexOf("@"))).setValue(user);
-
+                Toast.makeText(context, "Signed up Successfully", Toast.LENGTH_LONG).show();
 
             }
 
             @Override
             public void onError(FirebaseError firebaseError) {
-                Log.i("TAG", firebaseManager.errorMessage(firebaseError));
+                Toast.makeText(context, firebaseManager.errorMessage(firebaseError), Toast.LENGTH_LONG).show();
 
             }
         });

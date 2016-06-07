@@ -2,13 +2,12 @@ package com.ahmedfahmi.gravity.managers;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.widget.Toast;
 
-import com.ahmedfahmi.gravity.LoginActivity;
+import com.ahmedfahmi.gravity.Extra.Constants;
 import com.ahmedfahmi.gravity.UserProfileActivity;
-import com.ahmedfahmi.gravity.UsersListActivity;
+
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -16,23 +15,10 @@ import com.firebase.client.FirebaseError;
 /**
  * Created by Ahmed Fahmi on 5/30/2016.
  */
-public class LoginManager extends AppCompatActivity{
+public class LoginManager extends AppCompatActivity {
     private static LoginManager loginManager = new LoginManager();
     private FirebaseManager firebaseManager;
     private Firebase firebase;
-    private Context context;
-    private Intent intent;
-
-    public void setContext(Context context) {
-        this.context = context;
-        intent = new Intent(context, UserProfileActivity.class);
-    }
-
-    public boolean isLogged() {
-        return logged;
-    }
-
-    private boolean logged = false;
 
 
     public static LoginManager instance() {
@@ -45,25 +31,21 @@ public class LoginManager extends AppCompatActivity{
         firebase = firebaseManager.getFirebase();
     }
 
-    public void login(String email,String password){
+    public void login(final Context context, final String email, String password) {
+
         firebase.authWithPassword(email, password, new Firebase.AuthResultHandler() {
             @Override
             public void onAuthenticated(AuthData authData) {
-                Log.i("TAG","ok");
-
-                //startActivity(intent);
-                logged=true;
-
-
-
-
-
+                Intent intent = new Intent(context, UserProfileActivity.class);
+                intent.putExtra(Constants.ACTIVE_EMAIL_EXTRA, email);
+                Toast.makeText(context, "Login Successfully", Toast.LENGTH_LONG).show();
+                context.startActivity(intent);
 
             }
 
             @Override
             public void onAuthenticationError(FirebaseError firebaseError) {
-                Log.i("TAG",firebaseManager.errorMessage(firebaseError));
+                Toast.makeText(context, firebaseManager.errorMessage(firebaseError), Toast.LENGTH_LONG).show();
 
             }
         });
