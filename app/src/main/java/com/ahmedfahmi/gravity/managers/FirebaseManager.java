@@ -2,7 +2,6 @@ package com.ahmedfahmi.gravity.managers;
 
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
-import com.firebase.ui.FirebaseListAdapter;
 
 /**
  * Created by Ahmed Fahmi on 5/30/2016.
@@ -10,10 +9,9 @@ import com.firebase.ui.FirebaseListAdapter;
 public class FirebaseManager {
 
 
-    private final String FIREBASE_URL = "https://fahmiphotos.firebaseio.com/";
     private static FirebaseManager firebaseManager;
+    private final String FIREBASE_URL = "https://fahmiphotos.firebaseio.com/";
     private Firebase firebase;
-    private FirebaseListAdapter firebaseListAdapter;
 
 
 
@@ -29,27 +27,27 @@ public class FirebaseManager {
     }
 
 
-
-
     public Firebase getFirebase() {
         return firebase;
     }
-    public Firebase createChild(Firebase firebase,String childName) {
+
+    public Firebase createChild(Firebase firebase, String childName) {
 
         return firebase.child(childName);
     }
+
     public Firebase generateFirebase(String name) {
         return new Firebase(FIREBASE_URL + name);
     }
 
-    public String errorMessage(FirebaseError msg){
+    public String errorMessage(FirebaseError msg) {
         String message = msg.toString().substring(msg.toString().indexOf(" "));
 
         return message;
     }
 
 
-    }
+}
 
 
 

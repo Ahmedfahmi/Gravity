@@ -1,11 +1,10 @@
 package com.ahmedfahmi.gravity;
 
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-
-
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -13,7 +12,7 @@ import com.ahmedfahmi.gravity.managers.SignupManager;
 import com.firebase.client.Firebase;
 
 
-public class SignupActivity extends AppCompatActivity {
+public class SignupActivity extends AppCompatActivity implements View.OnClickListener {
 
     private SignupManager signupManager;
     private EditText etFirstName;
@@ -22,6 +21,7 @@ public class SignupActivity extends AppCompatActivity {
     private EditText etEmail;
     private EditText etPassword;
     private EditText etPasswordConfirmation;
+    private InputMethodManager inputMethodManager;
 
 
     @Override
@@ -42,6 +42,7 @@ public class SignupActivity extends AppCompatActivity {
         etPassword = (EditText) findViewById(R.id.signupPassword);
         etPasswordConfirmation = (EditText) findViewById(R.id.signupPasswordConfirm);
         etMobile = (EditText) findViewById(R.id.signupMobile);
+        inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 
 
     }
@@ -83,6 +84,17 @@ public class SignupActivity extends AppCompatActivity {
 
         }
 
+
+    }
+
+
+    @Override
+    public void onClick(View v) {
+
+
+        if (v.getId() == R.id.signUpMainLayout) {
+            inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
+        }
 
     }
 

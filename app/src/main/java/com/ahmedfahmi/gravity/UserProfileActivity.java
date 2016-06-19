@@ -3,10 +3,9 @@ package com.ahmedfahmi.gravity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -21,7 +20,6 @@ import com.ahmedfahmi.gravity.Extra.Constants;
 import com.ahmedfahmi.gravity.Extra.RoundedImageView;
 import com.ahmedfahmi.gravity.managers.FirebaseManager;
 import com.ahmedfahmi.gravity.managers.ImagesManager;
-import com.ahmedfahmi.gravity.managers.UserProfileManager;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -52,17 +50,18 @@ public class UserProfileActivity extends AppCompatActivity {
     private Intent intentOfUsersList;
 
     private ImagesManager imagesManager;
-    private UserProfileManager userProfileManager;
+
     private FirebaseManager firebaseManager;
 
     private Firebase userDataFirstName;
-    private Firebase picUrl;
+    private Firebase profilePicUrl;
     private Firebase photosUrl;
     private Firebase userMobileUrl;
 
-    private String number;
+    private String mobileNumber;
 
     private boolean menuDisabled = false;
+    private boolean callingServiceDisabled = false;
 
 
     @Override
@@ -80,21 +79,20 @@ public class UserProfileActivity extends AppCompatActivity {
         super.onStart();
         intiate();
         prepareFirebase();
-        menuDisabled = extractUserListActivity.getBoolean(UsersListActivity.MENU_DISABLED);
+        menuDisabled = extractUserListActivity.getBoolean(Constants.MENU_DISABLED);
+        callingServiceDisabled = extractUserListActivity.getBoolean(Constants.CALLING_SERVICE_STATUS);
 
 
-        picUrl.addValueEventListener(new ValueEventListener() {
+        profilePicUrl.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
                 if (dataSnapshot.exists()) {
 
-
                     Bitmap bitmap = imagesManager.toBitmap(dataSnapshot);
                     Bitmap roundedBitmap = RoundedImageView.getCroppedBitmap(bitmap, 100);
                     profilePic.setImageBitmap(roundedBitmap);
 
-                    Log.i("C_", "nice");
                 }
 
 
@@ -128,38 +126,29 @@ public class UserProfileActivity extends AppCompatActivity {
 
             }
         });
-//        FirebaseListAdapter<String> images = new FirebaseListAdapter<String>(this,String.class, R.layout.image_list,photosUrl) {
-//            @Override
-//            protected void populateView(View view, String s, int i) {
-//
-//                Log.e("E_E",s);
-//
-//                ((ImageView)findViewById(R.id.imageListPhoto)).setImageBitmap(imagesManager.toBitmap(s));
-//
-//
-//            }
-//        };photosList.setAdapter(images);
 
 
         userMobileUrl.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                number = dataSnapshot.getValue().toString();
-                if (number != null) {
+                mobileNumber = dataSnapshot.getValue().toString();
+                if (mobileNumber != null && callingServiceDisabled) {
                     callBtn.setVisibility(View.VISIBLE);
                 }
             }
 
             @Override
             public void onCancelled(FirebaseError firebaseError) {
+                Toast.makeText(getApplicationContext(), firebaseManager.errorMessage(firebaseError), Toast.LENGTH_LONG).show();
 
             }
         });
 
 
-        FirebaseListAdapter<String> listAdapter = new FirebaseListAdapter<String>(this, String.class, R.layout.image_list, photosUrl) {
+        FirebaseListAdapter<String> photosUrllistAdapter = new FirebaseListAdapter<String>(this, String.class, R.layout.image_list, photosUrl) {
             @Override
             protected void populateView(View view, String s, int i) {
+
 
                 ImagesManager imagesManager = ImagesManager.getInstance();
 
@@ -171,7 +160,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
             }
         };
-        photosList.setAdapter(listAdapter);
+        photosList.setAdapter(photosUrllistAdapter);
 
 
     }
@@ -192,18 +181,18 @@ public class UserProfileActivity extends AppCompatActivity {
 
 
         imagesManager = ImagesManager.getInstance();
-        userProfileManager = UserProfileManager.getInstance();
+
 
 
         email_Login = extractLoginActivityExtras.getString(Constants.ACTIVE_EMAIL_EXTRA);
         email_UsersList = extractUserListActivity.getString(Constants.ACTIVE_EMAIL_EXTRA);
         if (email_Login.contains("@")) {
-            userOnlineUrl = email_Login.substring(0, email_Login.indexOf("@"));
-            userProfileManager.setUserOnlineUrl(email_Login);
+            userOnlineUrl = email_Login.substring(0, email_Login.indexOf("@")) + "/";
+
         } else {
 
-            userOnlineUrl = email_UsersList;
-            userProfileManager.setUserOnlineUrl2(userOnlineUrl);
+            userOnlineUrl = email_UsersList + "/";
+
         }
 
 
@@ -211,11 +200,10 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private void prepareFirebase() {
         firebaseManager = FirebaseManager.instance();
-        picUrl = firebaseManager.generateFirebase("profilePics/" + userOnlineUrl);
-        photosUrl = firebaseManager.generateFirebase("photos/" + userOnlineUrl);
-        userDataFirstName = firebaseManager.generateFirebase("User/" + userOnlineUrl + "/firstName");
-        userMobileUrl = firebaseManager.generateFirebase("User/" + userOnlineUrl + "/mobile");
-        //Firebase firebase = new Firebase("https://fahmiphotos.firebaseio.com/photos/amr");
+        profilePicUrl = firebaseManager.generateFirebase(Constants.USER_PROFILE_PIC_URL + userOnlineUrl);
+        photosUrl = firebaseManager.generateFirebase(Constants.PHOTOS_URL + userOnlineUrl);
+        userDataFirstName = firebaseManager.generateFirebase(Constants.USER_URL + userOnlineUrl + Constants.USER_DATA_FIRSTNAME_URL);
+        userMobileUrl = firebaseManager.generateFirebase(Constants.USER_URL + userOnlineUrl + Constants.USER_DATA_MOBILE_URL);
 
 
     }
@@ -274,7 +262,7 @@ public class UserProfileActivity extends AppCompatActivity {
             String base64Image = imagesManager.convertBitmapToString(selectedBitmap);
             switch (requestCode) {
                 case 1:
-                    picUrl.setValue(base64Image);
+                    profilePicUrl.setValue(base64Image);
                     break;
                 case 2:
                     photosUrl.push().setValue(base64Image);
@@ -289,7 +277,7 @@ public class UserProfileActivity extends AppCompatActivity {
     public void call(View view) {
 
 
-        dialPhoneNumber(number);
+        dialPhoneNumber(mobileNumber);
 
 
     }

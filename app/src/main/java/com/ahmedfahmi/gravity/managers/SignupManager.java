@@ -3,7 +3,6 @@ package com.ahmedfahmi.gravity.managers;
 import android.content.Context;
 import android.widget.Toast;
 
-
 import com.ahmedfahmi.gravity.Extra.Constants;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -13,11 +12,11 @@ import com.firebase.client.FirebaseError;
  */
 public class SignupManager {
 
+
     private static SignupManager signupManager;
     private FirebaseManager firebaseManager;
     private Firebase firebaseInstant;
     private Firebase firebaseUserUrl;
-
 
 
     private SignupManager() {
@@ -30,6 +29,7 @@ public class SignupManager {
     public static SignupManager instance() {
         if (signupManager == null) {
             signupManager = new SignupManager();
+
         }
         return signupManager;
     }
@@ -40,7 +40,7 @@ public class SignupManager {
             @Override
             public void onSuccess() {
                 User user = new User(email, password, mobile, lastName, firstName);
-                firebaseUserUrl.child(email.substring(0, email.indexOf("@"))).setValue(user);
+                firebaseManager.createChild(firebaseUserUrl, email.substring(0, email.indexOf("@"))).setValue(user);
                 Toast.makeText(context, "Signed up Successfully", Toast.LENGTH_LONG).show();
 
             }
