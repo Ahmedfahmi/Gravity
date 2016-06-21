@@ -1,4 +1,4 @@
-package com.ahmedfahmi.gravity.managers;
+package com.ahmedfahmi.gravity.model;
 
 /**
  * Created by Ahmed Fahmi on 5/30/2016.

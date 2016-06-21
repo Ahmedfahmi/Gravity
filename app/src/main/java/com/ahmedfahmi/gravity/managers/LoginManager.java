@@ -2,6 +2,7 @@ package com.ahmedfahmi.gravity.managers;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 

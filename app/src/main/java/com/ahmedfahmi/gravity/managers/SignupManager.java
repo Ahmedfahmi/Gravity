@@ -4,6 +4,7 @@ import android.content.Context;
 import android.widget.Toast;
 
 import com.ahmedfahmi.gravity.Extra.Constants;
+import com.ahmedfahmi.gravity.model.User;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 
